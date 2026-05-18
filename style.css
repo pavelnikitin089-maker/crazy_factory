@@ -1,0 +1,294 @@
+/* ==========================================================================
+   КОНФИГУРАТОР МАСШТАБА: Меняй эти значения для точечной настройки
+   ========================================================================== */
+:root {
+    --map-max-height: 91vh;     /* Максимальная высота карты от экрана (например: 70vh, 75vh) */
+    --history-width: 300px;     /* Ширина панели истории ходов слева */
+    --top-panel-padding: 5px;   /* Внутренний отступ верхней панели управления (высота полосы) */
+    --token-size-percent: 5.1%; /* Размер фишек в % от ширины карты (уменьши, если они крупные) */
+}
+
+/* ==========================================================================
+   ОСНОВНЫЕ СТИЛИ СИСТЕМЫ
+   ========================================================================== */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #1a1a1a;
+    color: #fff;
+    font-family: sans-serif;
+    margin: 0;
+    padding: 4px 10px;
+    overflow: hidden; /* Запрещаем появление прокрутки экрана */
+}
+
+.game-container {
+    max-width: 100%;
+    width: 100%;
+    margin: 0 auto;
+}
+
+h1 {
+    font-size: 15px;
+    margin: 2px 0;
+    text-align: center;
+}
+
+/* Верхняя панель управления */
+.controls {
+    margin: 0 auto 6px auto;
+    padding: var(--top-panel-padding) 12px;
+    background-color: #2a2a2a;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    text-align: center;
+}
+
+button {
+    padding: 4px 12px;
+    font-size: 13px;
+    font-weight: bold;
+    background-color: #ff9800;
+    color: black;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 0 3px;
+}
+
+button:hover { 
+    background-color: #e68a00; 
+}
+
+#roll-btn { 
+    background-color: #4CAF50; 
+    color: white; 
+    font-size: 14px; 
+    padding: 4px 16px;
+}
+#roll-btn:hover { 
+    background-color: #45a049; 
+}
+
+#status {
+    display: inline-block;
+    margin-left: 12px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #deff9a;
+    vertical-align: middle;
+}
+
+/* Игровое пространство */
+.game-layout {
+    display: block;
+    position: relative;
+    width: 100%;
+    /* Динамический отступ под ширину левой панели ходов */
+    padding-left: calc(var(--history-width) + 10px); 
+}
+
+/* Левая панель истории */
+.history-panel {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: var(--history-width);
+    bottom: 0;
+    height: 100%;
+    background-color: #222;
+    border: 2px solid #333;
+    border-radius: 6px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+
+.history-header {
+    background-color: #2a2a2a;
+    padding: 6px;
+    font-size: 12px;
+    font-weight: bold;
+    border-bottom: 2px solid #333;
+    color: #ff9800;
+    text-align: center;
+}
+
+.history-log {
+    padding: 6px;
+    position: absolute;
+    top: 25px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    overflow-y: auto;
+    text-align: left;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.log-entry {
+    padding: 3px 5px;
+    margin-bottom: 3px;
+    background-color: #2d2d2d;
+    border-left: 3px solid #555;
+    border-radius: 3px;
+}
+
+/* Адаптивная обертка для карты */
+.board-wrapper {
+    position: relative;
+    width: 100%;
+    /* Ограничиваем высоту, чтобы гарантированно влезть в экран по вертикали */
+    max-height: var(--map-max-height); 
+    aspect-ratio: 1000 / 620; 
+    border: 2px solid #333;
+    border-radius: 6px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.7);
+    background-color: #111;
+    margin: 0 auto;
+}
+
+.board-bg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain; /* Картинка сохраняет пропорции без искажений */
+}
+
+.tokens-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+/* Стили фишек */
+/* Настройки фишек в public/style.css */
+.token {
+    width: var(--token-size-percent);
+    aspect-ratio: 1 / 1;
+    min-width: 14px;
+    min-height: 14px;
+    max-width: 26px;
+    max-height: 26px;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.6);
+    position: absolute;
+    
+    /* МАГИЯ ПЛАВНОСТИ: Перемещение по X и Y за 0.6 секунды с эффектом мягкого торможения */
+    transition: left 0.3s cubic-bezier(0.25, 1, 0.5, 1), top 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+    
+    transform: translate(-50%, -50%);
+    opacity: 0.85;
+    z-index: 10;
+}
+
+.token.p1 { background-color: #ff3b30; z-index: 10; } 
+.token.p2 { background-color: #007aff; z-index: 9; } 
+.token.p3 { background-color: #4cd964; z-index: 8; }
+
+/* Затемнение фона и размытие фабрики */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px); /* Размывает всё, что сзади */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Сама стильная карточка */
+.modal-card {
+    background: #1e1e24;
+    border: 3px solid #ff3b30; /* Кислотно-красная фабричная рамка */
+    box-shadow: 0 0 20px rgba(255, 59, 48, 0.5);
+    border-radius: 12px;
+    padding: 30px;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    color: #ffffff;
+    font-family: sans-serif;
+    animation: scaleUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.modal-emoji {
+    font-size: 50px;
+    margin-bottom: 10px;
+}
+
+.modal-card h2 {
+    margin: 0 0 15px 0;
+    font-size: 22px;
+    letter-spacing: 1px;
+}
+
+.modal-card p {
+    font-size: 16px;
+    line-height: 1.5;
+    margin-bottom: 25px;
+    color: #e0e0e0;
+}
+
+/* Большая фабричная кнопка */
+#modal-close-btn {
+    background: #ff3b30;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(255,59,48,0.4);
+    transition: transform 0.1s, background 0.2s;
+}
+
+#modal-close-btn:hover {
+    background: #e03229;
+    transform: scale(1.05);
+}
+
+/* Анимации появления */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes scaleUp {
+    from { transform: scale(0.7); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+/* ==========================================================================
+   КНОПКА ПЕРЕЗАПУСКА ИГРЫ (НАЧАТЬ ЗАНОВО)
+   ========================================================================== */
+#restart-btn {
+    display: none; /* По умолчанию скрыта, включаем через JS в конце игры */
+    background: #34c759; /* Фабричный зеленый цвет успеха */
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+    box-shadow: 0 3px 6px rgba(52, 199, 89, 0.3);
+    transition: background 0.2s, transform 0.1s;
+}
+
+#restart-btn:hover {
+    background: #28a745; /* Чуть темнее при наведении */
+}
+
+#restart-btn:active {
+    transform: scale(0.96); /* Эффект нажатия */
+}
